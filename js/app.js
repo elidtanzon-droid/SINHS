@@ -160,90 +160,70 @@ document.addEventListener("DOMContentLoaded", async () => {
   // LOAD CONVERSATIONS
   // =====================================
 
-  async function loadConversations() {
+ async function loadConversations() {
+  const { data: memberships, error: memberError } =
+    await supabaseClient
+      .from("conversation_members")
+      .select("conversation_id")
+      .eq("user_id", currentUser.id);
 
-    const container =
-      document.getElementById(
-        "conversationList"
-      );
-
-    if (!container) return;
-
-    const { data, error } =
-      await supabase
-        .from("conversation_members")
-        .select(`
-          conversation_id,
-          conversations (
-            id,
-            name,
-            is_group
-          )
-        `)
-        .eq(
-          "user_id",
-          currentUser.id
-        );
-
-    if (error) {
-
-      console.error(error);
-
-      container.innerHTML =
-        "<p>Unable to load conversations.</p>";
-
-      return;
-    }
-
-    if (!data || data.length === 0) {
-
-      container.innerHTML =
-        "<p>No conversations yet.</p>";
-
-      return;
-    }
-
-    container.innerHTML = "";
-
-    data.forEach((item) => {
-
-      const conversation =
-        item.conversations;
-
-      if (!conversation) return;
-
-      const button =
-        document.createElement("button");
-
-      button.type = "button";
-
-      button.className =
-        "conversation-button";
-
-      button.textContent =
-        conversation.name ||
-        (
-          conversation.is_group
-            ? "Group Chat"
-            : "Chat"
-        );
-
-      button.addEventListener(
-        "click",
-        () => {
-          openConversation(
-            conversation.id
-          );
-        }
-      );
-
-      container.appendChild(button);
-
-    });
-
+  if (memberError) {
+    console.error("Conversation members error:", memberError);
+    conversationList.innerHTML =
+      `<p>Unable to load conversations.</p>`;
+    return;
   }
 
-  await loadConversations();
+  if (!memberships || memberships.length === 0) {
+    conversationList.innerHTML =
+      `<p>No conversations yet.</p>`;
+    return;
+  }
+
+  const conversationIds =
+    memberships.map(item => item.conversation_id);
+
+  const { data: conversations, error: conversationError } =
+    await supabaseClient
+      .from("conversations")
+      .select("id, name, is_group, created_at")
+      .in("id", conversationIds)
+      .order("created_at", { ascending: false });
+
+  if (conversationError) {
+    console.error("Conversations error:", conversationError);
+    conversationList.innerHTML =
+      `<p>Unable to load conversations.</p>`;
+    return;
+  }
+
+  if (!conversations || conversations.length === 0) {
+    conversationList.innerHTML =
+      `<p>No conversations yet.</p>`;
+    return;
+  }
+
+  conversationList.innerHTML = conversations.map(conversation => `
+    <button
+      type="button"
+      class="conversation-item"
+      data-id="${conversation.id}"
+    >
+      ${escapeHtml(
+        conversation.name ||
+        (conversation.is_group ? "Group Chat" : "Direct Chat")
+      )}
+    </button>
+  `).join("");
+
+  document
+    .querySelectorAll(".conversation-item")
+    .forEach(button => {
+      button.addEventListener("click", () => {
+        openConversation(button.dataset.id);
+      });
+    });
+}
 
   // =====================================
   // OPEN CONVERSATION
