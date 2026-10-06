@@ -354,45 +354,65 @@
   ====================================== -->
 
   <dialog id="chatDialog">
+  <div class="dialog-content">
+    <h2>Start a New Chat</h2>
 
-    <div class="dialog-content">
+    <div class="chat-type-buttons">
+      <button type="button" id="directChatTab" class="primary-button">
+        Direct Chat
+      </button>
 
-      <h2>
-        Start a New Chat
-      </h2>
+      <button type="button" id="groupChatTab" class="secondary-button">
+        Create Group
+      </button>
+    </div>
 
-      <p>
-        Enter the user's Supabase ID
-        for now.
-      </p>
+    <!-- Direct Chat -->
+    <div id="directChatSection">
+      <p>Select a student or teacher.</p>
+
+      <div id="userList" class="user-list">
+        <p>Loading users...</p>
+      </div>
+    </div>
+
+    <!-- Group Chat -->
+    <div id="groupChatSection" style="display: none;">
+      <label for="groupName">Group Name</label>
 
       <input
         type="text"
-        id="targetUserId"
-        placeholder="User ID"
-      >
+        id="groupName"
+        placeholder="Enter group name"
+        maxlength="100"
+      />
 
-      <div class="dialog-buttons">
+      <p>Select members:</p>
 
-        <button
-          id="cancelChatBtn"
-          class="secondary-button"
-        >
-          Cancel
-        </button>
-
-        <button
-          id="createChatBtn"
-          class="primary-button"
-        >
-          Start Chat
-        </button>
-
+      <div id="groupUserList" class="user-list">
+        <p>Loading users...</p>
       </div>
 
+      <button
+        type="button"
+        id="createGroupBtn"
+        class="primary-button"
+      >
+        Create Group
+      </button>
     </div>
 
-  </dialog>
+    <div class="dialog-buttons">
+      <button
+        type="button"
+        id="cancelChatBtn"
+        class="secondary-button"
+      >
+        Cancel
+      </button>
+    </div>
+  </div>
+</dialog>
 
 
   <!-- =====================================
