@@ -574,5 +574,242 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     return element.innerHTML;
   }
+// =====================================
+// NEW CHAT
+// =====================================
+
+const newChatButton =
+  document.getElementById("newChatBtn");
+
+const chatDialog =
+  document.getElementById("chatDialog");
+
+const cancelChatButton =
+  document.getElementById("cancelChatBtn");
+
+if (newChatButton && chatDialog) {
+
+  newChatButton.addEventListener(
+    "click",
+    async () => {
+
+      chatDialog.showModal();
+
+      await loadUsers();
+
+    }
+  );
+}
+
+if (cancelChatButton && chatDialog) {
+
+  cancelChatButton.addEventListener(
+    "click",
+    () => {
+      chatDialog.close();
+    }
+  );
+}
+
+
+// =====================================
+// LOAD USERS
+// =====================================
+
+async function loadUsers() {
+
+  const userList =
+    document.getElementById("userList");
+
+  if (!userList) return;
+
+  userList.innerHTML =
+    "<p>Loading users...</p>";
+
+  const { data, error } =
+    await supabase
+      .from("profiles")
+      .select(
+        "id, full_name, role, lrn"
+      )
+      .neq(
+        "id",
+        currentUser.id
+      )
+      .order(
+        "full_name",
+        { ascending: true }
+      );
+
+  if (error) {
+
+    console.error(error);
+
+    userList.innerHTML =
+      "<p>Unable to load users.</p>";
+
+    return;
+  }
+
+  if (!data || data.length === 0) {
+
+    userList.innerHTML =
+      "<p>No other users found.</p>";
+
+    return;
+  }
+
+  userList.innerHTML = "";
+
+  data.forEach((user) => {
+
+    const button =
+      document.createElement("button");
+
+    button.type = "button";
+
+    button.className =
+      "user-select-button";
+
+    button.innerHTML = `
+      <strong>
+        ${escapeHTML(user.full_name)}
+      </strong>
+
+      <span>
+        ${
+          user.role === "teacher"
+            ? "Teacher"
+            : "Student"
+        }
+      </span>
+    `;
+
+    button.addEventListener(
+      "click",
+      async () => {
+
+        await createDirectChat(
+          user.id
+        );
+
+        chatDialog.close();
+
+      }
+    );
+
+    userList.appendChild(button);
+
+  });
+}
+
+
+// =====================================
+// CREATE DIRECT CHAT
+// =====================================
+
+async function createDirectChat(
+  targetUserId
+) {
+
+  // Check if a chat already exists
+  const { data: myMemberships } =
+    await supabase
+      .from("conversation_members")
+      .select("conversation_id")
+      .eq(
+        "user_id",
+        currentUser.id
+      );
+
+  if (myMemberships) {
+
+    for (const membership of myMemberships) {
+
+      const { data: targetMembership } =
+        await supabase
+          .from("conversation_members")
+          .select("conversation_id")
+          .eq(
+            "conversation_id",
+            membership.conversation_id
+          )
+          .eq(
+            "user_id",
+            targetUserId
+          )
+          .maybeSingle();
+
+      if (targetMembership) {
+
+        await loadConversations();
+
+        await openConversation(
+          membership.conversation_id
+        );
+
+        return;
+      }
+    }
+  }
+
+  // Create new conversation
+  const { data: conversation, error } =
+    await supabase
+      .from("conversations")
+      .insert({
+        name: null,
+        is_group: false,
+        created_by: currentUser.id
+      })
+      .select()
+      .single();
+
+  if (error) {
+
+    console.error(error);
+
+    alert(error.message);
+
+    return;
+  }
+
+  // Add both users
+  const { error: memberError } =
+    await supabase
+      .from("conversation_members")
+      .insert([
+        {
+          conversation_id:
+            conversation.id,
+
+          user_id:
+            currentUser.id
+        },
+
+        {
+          conversation_id:
+            conversation.id,
+
+          user_id:
+            targetUserId
+        }
+      ]);
+
+  if (memberError) {
+
+    console.error(memberError);
+
+    alert(memberError.message);
+
+    return;
+  }
+
+  await loadConversations();
+
+  await openConversation(
+    conversation.id
+  );
+}
 
 });
