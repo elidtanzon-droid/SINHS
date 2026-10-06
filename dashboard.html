@@ -2,142 +2,289 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
   <title>SINHS Portal</title>
 
-  <link rel="stylesheet" href="css/style.css">
+  <link
+    rel="stylesheet"
+    href="css/style.css"
+  >
+
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Configuration -->
+  <script src="js/config.js"></script>
 </head>
 
 <body>
 
-<div class="app">
+  <!-- =====================================
+       SIDEBAR
+  ====================================== -->
 
   <aside class="sidebar">
 
-    <h2>SINHS</h2>
+    <div class="school-brand">
 
-    <nav>
+      <div class="school-logo">
+        SINHS
+      </div>
 
-      <button data-section="home">
-        Dashboard
+      <div>
+        <h2>SINHS</h2>
+        <span>School Portal</span>
+      </div>
+
+    </div>
+
+    <nav class="navigation">
+
+      <button
+        class="nav-button"
+        data-section="homeSection"
+      >
+        🏠 Home
       </button>
 
-      <button data-section="messages">
-        Messages
+      <button
+        class="nav-button"
+        data-section="messagesSection"
+      >
+        💬 Messages
       </button>
 
-      <button data-section="announcements">
-        Announcements
+      <button
+        class="nav-button"
+        data-section="announcementsSection"
+      >
+        📢 Announcements
       </button>
 
     </nav>
 
-    <button id="logoutBtn" class="logout">
+    <button
+      id="logoutBtn"
+      class="logout-button"
+    >
       Log Out
     </button>
 
   </aside>
 
 
-  <main class="main">
+  <!-- =====================================
+       MAIN CONTENT
+  ====================================== -->
 
-    <header class="topbar">
+  <main class="main-content">
+
+    <!-- HEADER -->
+
+    <header class="top-header">
 
       <div>
-
-        <h1 id="pageTitle">
-          Dashboard
-        </h1>
-
-        <p id="userName">
-          Loading...
+        <h1>SINHS Portal</h1>
+        <p>
+          San Isidro National High School
         </p>
+      </div>
+
+      <div class="user-information">
+
+        <strong id="userName">
+          Loading...
+        </strong>
+
+        <span id="userRole">
+          Loading...
+        </span>
 
       </div>
 
     </header>
 
 
-    <!-- DASHBOARD -->
+    <!-- =================================
+         HOME
+    ================================== -->
 
-    <section id="home" class="section active">
+    <section
+      id="homeSection"
+      class="portal-section"
+    >
 
-      <div class="hero">
+      <div class="welcome-card">
 
         <h2>
-          Welcome to SINHS Portal
+          Welcome to the SINHS Portal
         </h2>
 
         <p>
-          A centralized communication portal
-          for students and teachers.
+          A centralized platform for
+          students and teachers to
+          communicate and access school
+          information.
         </p>
+
+      </div>
+
+
+      <div class="dashboard-grid">
+
+        <div class="dashboard-card">
+
+          <h3>💬 Messages</h3>
+
+          <p>
+            Communicate with students
+            and teachers.
+          </p>
+
+          <button
+            class="primary-button"
+            data-section="messagesSection"
+          >
+            Open Messages
+          </button>
+
+        </div>
+
+
+        <div class="dashboard-card">
+
+          <h3>📢 Announcements</h3>
+
+          <p>
+            View important school
+            announcements.
+          </p>
+
+          <button
+            class="primary-button"
+            data-section="announcementsSection"
+          >
+            View Announcements
+          </button>
+
+        </div>
 
       </div>
 
     </section>
 
 
-    <!-- MESSAGES -->
+    <!-- =================================
+         MESSAGES
+    ================================== -->
 
-    <section id="messages" class="section">
+    <section
+      id="messagesSection"
+      class="portal-section"
+      style="display: none;"
+    >
 
       <div class="section-header">
 
-        <h2>
-          Messages
-        </h2>
+        <div>
+          <h2>Messages</h2>
 
-        <button id="newChatBtn">
-          New Chat
+          <p>
+            Chat with students and teachers.
+          </p>
+        </div>
+
+        <button
+          id="newChatBtn"
+          class="primary-button"
+        >
+          + New Chat
         </button>
 
       </div>
 
 
-      <div class="messages-layout">
+      <div class="messaging-layout">
 
-        <div
-          id="conversationList"
-          class="conversation-list">
+        <!-- CHAT LIST -->
+
+        <div class="conversation-panel">
+
+          <h3>Conversations</h3>
+
+          <div
+            id="conversationList"
+            class="conversation-list"
+          >
+
+            <p>
+              Loading conversations...
+            </p>
+
+          </div>
+
         </div>
 
 
+        <!-- CHAT WINDOW -->
+
         <div class="chat-panel">
 
-          <div
-            id="chatHeader"
-            class="chat-header">
+          <div class="chat-header">
 
-            Select a conversation
+            <h3>
+              Messages
+            </h3>
 
           </div>
 
 
           <div
-            id="messageList"
-            class="message-list">
+            id="messagesList"
+            class="messages-list"
+          >
+
+            <div class="empty-chat">
+
+              <p>
+                Select a conversation
+                to start messaging.
+              </p>
+
+            </div>
+
           </div>
 
+
+          <!-- MESSAGE FORM -->
 
           <form
             id="messageForm"
-            class="message-form">
+            class="message-form"
+          >
 
             <input
+              type="text"
               id="messageInput"
               placeholder="Type a message..."
               autocomplete="off"
             >
 
             <input
-              id="imageInput"
               type="file"
+              id="messageImage"
               accept="image/*"
             >
 
-            <button type="submit">
+            <button
+              type="submit"
+              class="send-button"
+            >
               Send
             </button>
 
@@ -150,108 +297,109 @@
     </section>
 
 
-    <!-- ANNOUNCEMENTS -->
+    <!-- =================================
+         ANNOUNCEMENTS
+    ================================== -->
 
-    <section id="announcements" class="section">
+    <section
+      id="announcementsSection"
+      class="portal-section"
+      style="display: none;"
+    >
 
       <div class="section-header">
 
-        <h2>
-          Announcements
-        </h2>
+        <div>
+
+          <h2>
+            Announcements
+          </h2>
+
+          <p>
+            Important school information
+            from teachers.
+          </p>
+
+        </div>
 
         <button
           id="newAnnouncementBtn"
-          hidden>
-
-          New Announcement
-
+          class="primary-button"
+          style="display: none;"
+        >
+          + New Announcement
         </button>
 
       </div>
 
 
-      <div id="announcementList"></div>
+      <div
+        id="announcementsList"
+        class="announcements-list"
+      >
+
+        <p>
+          Loading announcements...
+        </p>
+
+      </div>
 
     </section>
 
   </main>
 
-</div>
+
+  <!-- =====================================
+       NEW CHAT DIALOG
+  ====================================== -->
+
+  <dialog id="chatDialog">
+
+    <div class="dialog-content">
+
+      <h2>
+        Start a New Chat
+      </h2>
+
+      <p>
+        Enter the user's Supabase ID
+        for now.
+      </p>
+
+      <input
+        type="text"
+        id="targetUserId"
+        placeholder="User ID"
+      >
+
+      <div class="dialog-buttons">
+
+        <button
+          id="cancelChatBtn"
+          class="secondary-button"
+        >
+          Cancel
+        </button>
+
+        <button
+          id="createChatBtn"
+          class="primary-button"
+        >
+          Start Chat
+        </button>
+
+      </div>
+
+    </div>
+
+  </dialog>
 
 
-<!-- NEW CHAT -->
+  <!-- =====================================
+       APP JAVASCRIPT
+  ====================================== -->
 
-<dialog id="chatDialog">
-
-  <form method="dialog" id="chatForm">
-
-    <h3>
-      Start a Chat
-    </h3>
-
-    <input
-      id="userEmail"
-      type="email"
-      placeholder="User school email"
-      required
-    >
-
-    <button value="default">
-      Create Chat
-    </button>
-
-    <button value="cancel">
-      Cancel
-    </button>
-
-  </form>
-
-</dialog>
-
-
-<!-- NEW ANNOUNCEMENT -->
-
-<dialog id="announcementDialog">
-
-  <form
-    method="dialog"
-    id="announcementForm">
-
-    <h3>
-      New Announcement
-    </h3>
-
-    <input
-      id="announcementTitle"
-      placeholder="Title"
-      required
-    >
-
-    <textarea
-      id="announcementBody"
-      placeholder="Announcement"
-      required>
-    </textarea>
-
-    <button value="default">
-      Post
-    </button>
-
-    <button value="cancel">
-      Cancel
-    </button>
-
-  </form>
-
-</dialog>
-
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<script src="js/config.js"></script>
-
-<script src="js/app.js"></script>
+  <script src="js/app.js"></script>
 
 </body>
 </html>
