@@ -1254,7 +1254,6 @@ if (createGroupBtn) {
     }
 
   });
-
+  
 }
-
 });
