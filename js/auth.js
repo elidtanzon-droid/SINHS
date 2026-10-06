@@ -15,11 +15,29 @@ function identifierToEmail(identifier) {
     return value;
   }
 
-  // Students using LRN.
+  // Students use their LRN.
   return `${value}@students.sinhs.local`;
 }
 
 
+// Check if the user is already logged in
+async function checkExistingSession() {
+
+  const {
+    data: { session }
+  } = await supabaseClient.auth.getSession();
+
+  if (session) {
+    window.location.href = "dashboard.html";
+  }
+}
+
+
+// Run session check when login page opens
+checkExistingSession();
+
+
+// Login
 loginForm.addEventListener(
   "submit",
   async (event) => {
