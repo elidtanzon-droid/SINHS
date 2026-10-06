@@ -22,49 +22,50 @@ document.addEventListener("DOMContentLoaded", async () => {
   // LOAD PROFILE
   // =====================================
 
-  const { data: profile, error: profileError } =
-    await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", currentUser.id)
-      .single();
+  const {
+    data: profile,
+    error: profileError
+  } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", currentUser.id)
+    .single();
 
-  if (profileError) {
+  if (profileError || !profile) {
     console.error(profileError);
+    alert("Could not load your profile.");
+    return;
   }
 
-  if (profile) {
+  const userName =
+    document.getElementById("userName");
 
-    const userName =
-      document.getElementById("userName");
+  const userRole =
+    document.getElementById("userRole");
 
-    const userRole =
-      document.getElementById("userRole");
+  if (userName) {
+    userName.textContent = profile.full_name;
+  }
 
-    if (userName) {
-      userName.textContent =
-        profile.full_name;
-    }
+  if (userRole) {
+    userRole.textContent =
+      profile.role === "teacher"
+        ? "Teacher"
+        : "Student";
+  }
 
-    if (userRole) {
-      userRole.textContent =
-        profile.role === "teacher"
-          ? "Teacher"
-          : "Student";
-    }
+  // =====================================
+  // TEACHER ANNOUNCEMENT BUTTON
+  // =====================================
 
-    // Only teachers see announcement button
-    const announcementButton =
-      document.getElementById(
-        "newAnnouncementBtn"
-      );
+  const announcementButton =
+    document.getElementById("newAnnouncementBtn");
 
-    if (announcementButton) {
-      announcementButton.style.display =
-        profile.role === "teacher"
-          ? "block"
-          : "none";
-    }
+  if (announcementButton) {
+    announcementButton.style.display =
+      profile.role === "teacher"
+        ? "block"
+        : "none";
   }
 
   // =====================================
@@ -72,37 +73,26 @@ document.addEventListener("DOMContentLoaded", async () => {
   // =====================================
 
   const navigationButtons =
-    document.querySelectorAll(
-      "[data-section]"
-    );
+    document.querySelectorAll("[data-section]");
 
   navigationButtons.forEach((button) => {
 
     button.addEventListener("click", () => {
 
       const sectionId =
-        button.getAttribute(
-          "data-section"
-        );
+        button.getAttribute("data-section");
 
-      // Hide all sections
       document
-        .querySelectorAll(
-          ".portal-section"
-        )
+        .querySelectorAll(".portal-section")
         .forEach((section) => {
           section.style.display = "none";
         });
 
-      // Show selected section
       const selectedSection =
-        document.getElementById(
-          sectionId
-        );
+        document.getElementById(sectionId);
 
       if (selectedSection) {
-        selectedSection.style.display =
-          "block";
+        selectedSection.style.display = "block";
       }
 
     });
@@ -133,10 +123,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // =====================================
-  // LOAD ANNOUNCEMENTS
+  // ANNOUNCEMENTS
   // =====================================
-
-  await loadAnnouncements();
 
   async function loadAnnouncements() {
 
@@ -191,15 +179,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       item.innerHTML = `
         <h3>
-          ${escapeHTML(
-            announcement.title
-          )}
+          ${escapeHTML(announcement.title)}
         </h3>
 
         <p>
-          ${escapeHTML(
-            announcement.content
-          )}
+          ${escapeHTML(announcement.content)}
         </p>
 
         <small>
@@ -214,13 +198,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       container.appendChild(item);
 
     });
+
   }
+
+  await loadAnnouncements();
 
   // =====================================
   // LOAD CONVERSATIONS
   // =====================================
-
-  await loadConversations();
 
   async function loadConversations() {
 
@@ -272,8 +257,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       const conversation =
         item.conversations;
 
+      if (!conversation) return;
+
       const button =
         document.createElement("button");
+
+      button.type = "button";
 
       button.className =
         "conversation-button";
@@ -298,7 +287,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       container.appendChild(button);
 
     });
+
   }
+
+  await loadConversations();
 
   // =====================================
   // OPEN CONVERSATION
@@ -314,6 +306,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     await loadMessages(
       conversationId
     );
+
   }
 
   // =====================================
@@ -391,7 +384,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         image = `
           <img
-            src="${message.image_url}"
+            src="${escapeHTML(message.image_url)}"
             class="message-image"
             alt="Sent image"
           >
@@ -432,6 +425,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     container.scrollTop =
       container.scrollHeight;
+
   }
 
   // =====================================
@@ -502,20 +496,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       }
     );
+
   }
 
   // =====================================
-  // TEACHER ANNOUNCEMENT
+  // CREATE ANNOUNCEMENT
   // =====================================
-
-  const announcementButton =
-    document.getElementById(
-      "newAnnouncementBtn"
-    );
 
   if (
     announcementButton &&
-    profile &&
     profile.role === "teacher"
   ) {
 
@@ -524,16 +513,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       async () => {
 
         const title =
-          prompt(
-            "Announcement title:"
-          );
+          prompt("Announcement title:");
 
         if (!title) return;
 
         const content =
-          prompt(
-            "Announcement message:"
-          );
+          prompt("Announcement message:");
 
         if (!content) return;
 
@@ -558,225 +543,242 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       }
     );
+
   }
 
   // =====================================
-  // HTML SECURITY
+  // NEW CHAT
   // =====================================
 
-  function escapeHTML(value) {
+  const newChatButton =
+    document.getElementById(
+      "newChatBtn"
+    );
 
-    const element =
-      document.createElement("div");
+  const chatDialog =
+    document.getElementById(
+      "chatDialog"
+    );
 
-    element.textContent =
-      value || "";
+  const cancelChatButton =
+    document.getElementById(
+      "cancelChatBtn"
+    );
 
-    return element.innerHTML;
-  }
-// =====================================
-// NEW CHAT
-// =====================================
+  if (newChatButton && chatDialog) {
 
-const newChatButton =
-  document.getElementById("newChatBtn");
-
-const chatDialog =
-  document.getElementById("chatDialog");
-
-const cancelChatButton =
-  document.getElementById("cancelChatBtn");
-
-if (newChatButton && chatDialog) {
-
-  newChatButton.addEventListener(
-    "click",
-    async () => {
-
-      chatDialog.showModal();
-
-      await loadUsers();
-
-    }
-  );
-}
-
-if (cancelChatButton && chatDialog) {
-
-  cancelChatButton.addEventListener(
-    "click",
-    () => {
-      chatDialog.close();
-    }
-  );
-}
-
-
-// =====================================
-// LOAD USERS
-// =====================================
-
-async function loadUsers() {
-
-  const userList =
-    document.getElementById("userList");
-
-  if (!userList) return;
-
-  userList.innerHTML =
-    "<p>Loading users...</p>";
-
-  const { data, error } =
-    await supabase
-      .from("profiles")
-      .select(
-        "id, full_name, role, lrn"
-      )
-      .neq(
-        "id",
-        currentUser.id
-      )
-      .order(
-        "full_name",
-        { ascending: true }
-      );
-
-  if (error) {
-
-    console.error(error);
-
-    userList.innerHTML =
-      "<p>Unable to load users.</p>";
-
-    return;
-  }
-
-  if (!data || data.length === 0) {
-
-    userList.innerHTML =
-      "<p>No other users found.</p>";
-
-    return;
-  }
-
-  userList.innerHTML = "";
-
-  data.forEach((user) => {
-
-    const button =
-      document.createElement("button");
-
-    button.type = "button";
-
-    button.className =
-      "user-select-button";
-
-    button.innerHTML = `
-      <strong>
-        ${escapeHTML(user.full_name)}
-      </strong>
-
-      <span>
-        ${
-          user.role === "teacher"
-            ? "Teacher"
-            : "Student"
-        }
-      </span>
-    `;
-
-    button.addEventListener(
+    newChatButton.addEventListener(
       "click",
       async () => {
 
-        await createDirectChat(
-          user.id
-        );
+        chatDialog.showModal();
 
-        chatDialog.close();
+        await loadUsers();
 
       }
     );
 
-    userList.appendChild(button);
-
-  });
-}
-
-
-// =====================================
-// CREATE DIRECT CHAT
-// =====================================
-
-async function createDirectChat(
-  targetUserId
-) {
-
-  // Check if a chat already exists
-  const { data: myMemberships } =
-    await supabase
-      .from("conversation_members")
-      .select("conversation_id")
-      .eq(
-        "user_id",
-        currentUser.id
-      );
-
-  if (myMemberships) {
-
-    for (const membership of myMemberships) {
-
-      const { data: targetMembership } =
-        await supabase
-          .from("conversation_members")
-          .select("conversation_id")
-          .eq(
-            "conversation_id",
-            membership.conversation_id
-          )
-          .eq(
-            "user_id",
-            targetUserId
-          )
-          .maybeSingle();
-
-      if (targetMembership) {
-
-        await loadConversations();
-
-        await openConversation(
-          membership.conversation_id
-        );
-
-        return;
-      }
-    }
   }
 
-  // Create new conversation
-  const { data: conversation, error } =
-    await supabase
+  if (cancelChatButton && chatDialog) {
+
+    cancelChatButton.addEventListener(
+      "click",
+      () => {
+        chatDialog.close();
+      }
+    );
+
+  }
+
+  // =====================================
+  // LOAD USERS
+  // =====================================
+
+  async function loadUsers() {
+
+    const userList =
+      document.getElementById(
+        "userList"
+      );
+
+    if (!userList) return;
+
+    userList.innerHTML =
+      "<p>Loading users...</p>";
+
+    const { data, error } =
+      await supabase
+        .from("profiles")
+        .select(
+          "id, full_name, role, lrn"
+        )
+        .neq(
+          "id",
+          currentUser.id
+        )
+        .order(
+          "full_name",
+          { ascending: true }
+        );
+
+    if (error) {
+
+      console.error(error);
+
+      userList.innerHTML =
+        "<p>Unable to load users.</p>";
+
+      return;
+    }
+
+    if (!data || data.length === 0) {
+
+      userList.innerHTML =
+        "<p>No other users found.</p>";
+
+      return;
+    }
+
+    userList.innerHTML = "";
+
+    data.forEach((user) => {
+
+      const button =
+        document.createElement("button");
+
+      button.type = "button";
+
+      button.className =
+        "user-select-button";
+
+      button.innerHTML = `
+        <strong>
+          ${escapeHTML(user.full_name)}
+        </strong>
+
+        <span>
+          ${
+            user.role === "teacher"
+              ? "Teacher"
+              : "Student"
+          }
+        </span>
+      `;
+
+      button.addEventListener(
+        "click",
+        async () => {
+
+          await createDirectChat(
+            user.id
+          );
+
+          chatDialog.close();
+
+        }
+      );
+
+      userList.appendChild(button);
+
+    });
+
+  }
+
+  // =====================================
+  // CREATE DIRECT CHAT
+  // =====================================
+
+  async function createDirectChat(
+    targetUserId
+  ) {
+
+    const { data: myMemberships } =
+      await supabase
+        .from("conversation_members")
+        .select("conversation_id")
+        .eq(
+          "user_id",
+          currentUser.id
+        );
+
+    if (myMemberships) {
+
+      for (const membership of myMemberships) {
+
+        const { data: conversation } =
+          await supabase
+            .from("conversations")
+            .select(
+              "id, is_group"
+            )
+            .eq(
+              "id",
+              membership.conversation_id
+            )
+            .eq(
+              "is_group",
+              false
+            )
+            .maybeSingle();
+
+        if (!conversation) continue;
+
+        const { data: targetMembership } =
+          await supabase
+            .from("conversation_members")
+            .select("conversation_id")
+            .eq(
+              "conversation_id",
+              membership.conversation_id
+            )
+            .eq(
+              "user_id",
+              targetUserId
+            )
+            .maybeSingle();
+
+        if (targetMembership) {
+
+          await loadConversations();
+
+          await openConversation(
+            membership.conversation_id
+          );
+
+          return;
+        }
+
+      }
+
+    }
+
+    const {
+      data: conversation,
+      error
+    } = await supabase
       .from("conversations")
       .insert({
         name: null,
         is_group: false,
-        created_by: currentUser.id
+        created_by:
+          currentUser.id
       })
       .select()
       .single();
 
-  if (error) {
+    if (error) {
 
-    console.error(error);
+      console.error(error);
 
-    alert(error.message);
+      alert(error.message);
 
-    return;
-  }
+      return;
+    }
 
-  // Add both users
-  const { error: memberError } =
-    await supabase
+    const {
+      error: memberError
+    } = await supabase
       .from("conversation_members")
       .insert([
         {
@@ -796,461 +798,373 @@ async function createDirectChat(
         }
       ]);
 
-  if (memberError) {
+    if (memberError) {
 
-    console.error(memberError);
+      console.error(memberError);
 
-    alert(memberError.message);
+      alert(memberError.message);
 
-    return;
-  }
-
-  await loadConversations();
-
-  await openConversation(
-    conversation.id
-  );
-}
-// ===============================
-// GROUP CHAT
-// ===============================
-
-const directChatTab = document.getElementById("directChatTab");
-const groupChatTab = document.getElementById("groupChatTab");
-
-const directChatSection = document.getElementById("directChatSection");
-const groupChatSection = document.getElementById("groupChatSection");
-
-const createGroupBtn = document.getElementById("createGroupBtn");
-
-
-// Show Direct Chat
-if (directChatTab) {
-  directChatTab.addEventListener("click", async () => {
-    directChatSection.style.display = "block";
-    groupChatSection.style.display = "none";
-
-    directChatTab.className = "primary-button";
-    groupChatTab.className = "secondary-button";
-
-    await loadUsers();
-  });
-}
-
-
-// Show Group Chat
-if (groupChatTab) {
-  groupChatTab.addEventListener("click", async () => {
-
-    // Only teachers can create groups
-    if (currentProfile.role !== "teacher") {
-      alert("Only teachers can create group chats.");
       return;
     }
 
-    directChatSection.style.display = "none";
-    groupChatSection.style.display = "block";
+    await loadConversations();
 
-    directChatTab.className = "secondary-button";
-    groupChatTab.className = "primary-button";
+    await openConversation(
+      conversation.id
+    );
 
-    await loadGroupUsers();
-  });
-}
+  }
 
+  // =====================================
+  // GROUP CHAT TABS
+  // =====================================
 
-// Load users for group selection
-async function loadGroupUsers() {
+  const directChatTab =
+    document.getElementById(
+      "directChatTab"
+    );
 
-  const groupUserList = document.getElementById("groupUserList");
+  const groupChatTab =
+    document.getElementById(
+      "groupChatTab"
+    );
 
-  if (!groupUserList) return;
+  const directChatSection =
+    document.getElementById(
+      "directChatSection"
+    );
 
-  groupUserList.innerHTML = "<p>Loading users...</p>";
+  const groupChatSection =
+    document.getElementById(
+      "groupChatSection"
+    );
 
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("id, full_name, role, lrn")
-    .neq("id", currentUser.id)
-    .order("full_name", { ascending: true });
+  const createGroupBtn =
+    document.getElementById(
+      "createGroupBtn"
+    );
 
-  if (error) {
+  // Direct Chat tab
+  if (directChatTab) {
 
-    console.error(error);
+    directChatTab.addEventListener(
+      "click",
+      async () => {
+
+        directChatSection.style.display =
+          "block";
+
+        groupChatSection.style.display =
+          "none";
+
+        directChatTab.className =
+          "primary-button";
+
+        groupChatTab.className =
+          "secondary-button";
+
+        await loadUsers();
+
+      }
+    );
+
+  }
+
+  // Group Chat tab
+  if (groupChatTab) {
+
+    groupChatTab.addEventListener(
+      "click",
+      async () => {
+
+        if (profile.role !== "teacher") {
+
+          alert(
+            "Only teachers can create group chats."
+          );
+
+          return;
+        }
+
+        directChatSection.style.display =
+          "none";
+
+        groupChatSection.style.display =
+          "block";
+
+        directChatTab.className =
+          "secondary-button";
+
+        groupChatTab.className =
+          "primary-button";
+
+        await loadGroupUsers();
+
+      }
+    );
+
+  }
+
+  // =====================================
+  // LOAD GROUP USERS
+  // =====================================
+
+  async function loadGroupUsers() {
+
+    const groupUserList =
+      document.getElementById(
+        "groupUserList"
+      );
+
+    if (!groupUserList) return;
 
     groupUserList.innerHTML =
-      "<p>Unable to load users.</p>";
+      "<p>Loading users...</p>";
 
-    return;
-  }
+    const { data, error } =
+      await supabase
+        .from("profiles")
+        .select(
+          "id, full_name, role, lrn"
+        )
+        .neq(
+          "id",
+          currentUser.id
+        )
+        .order(
+          "full_name",
+          { ascending: true }
+        );
 
-  if (!data || data.length === 0) {
-
-    groupUserList.innerHTML =
-      "<p>No other users found.</p>";
-
-    return;
-  }
-
-  groupUserList.innerHTML = "";
-
-  data.forEach((user) => {
-
-    const item = document.createElement("label");
-
-    item.className = "group-user-item";
-
-    item.innerHTML = `
-      <input
-        type="checkbox"
-        value="${user.id}"
-        class="group-user-checkbox"
-      >
-
-      <div class="group-user-info">
-        <strong>${escapeHTML(user.full_name)}</strong>
-        <span>
-          ${user.role === "teacher" ? "Teacher" : "Student"}
-        </span>
-      </div>
-    `;
-
-    groupUserList.appendChild(item);
-
-  });
-}
-
-
-// Create group
-if (createGroupBtn) {
-
-  createGroupBtn.addEventListener("click", async () => {
-
-    if (currentProfile.role !== "teacher") {
-
-      alert("Only teachers can create group chats.");
-
-      return;
-    }
-
-    const groupName =
-      document.getElementById("groupName").value.trim();
-
-    if (!groupName) {
-
-      alert("Please enter a group name.");
-
-      return;
-    }
-
-    const selectedUsers =
-      Array.from(
-        document.querySelectorAll(".group-user-checkbox:checked")
-      ).map((checkbox) => checkbox.value);
-
-    if (selectedUsers.length === 0) {
-
-      alert("Please select at least one member.");
-
-      return;
-    }
-
-    createGroupBtn.disabled = true;
-    createGroupBtn.textContent = "Creating...";
-
-    try {
-
-      // Create conversation
-      const { data: conversation, error: conversationError } =
-        await supabase
-          .from("conversations")
-          .insert({
-            name: groupName,
-            is_group: true,
-            created_by: currentUser.id
-          })
-          .select()
-          .single();
-
-      if (conversationError) {
-        throw conversationError;
-      }
-
-
-      // Add teacher + selected members
-      const members = [
-        {
-          conversation_id: conversation.id,
-          user_id: currentUser.id
-        },
-
-        ...selectedUsers.map((userId) => ({
-          conversation_id: conversation.id,
-          user_id: userId
-        }))
-      ];
-
-
-      const { error: memberError } =
-        await supabase
-          .from("conversation_members")
-          .insert(members);
-
-      if (memberError) {
-        throw memberError;
-      }
-
-
-      // Reset dialog
-      document.getElementById("groupName").value = "";
-
-      document
-        .querySelectorAll(".group-user-checkbox")
-        .forEach((checkbox) => {
-          checkbox.checked = false;
-        });
-
-
-      chatDialog.close();
-
-      await loadConversations();
-
-      await openConversation(conversation.id);
-
-    } catch (error) {
+    if (error) {
 
       console.error(error);
 
-      alert(
-        "Could not create the group: " +
-        error.message
-      );
+      groupUserList.innerHTML =
+        "<p>Unable to load users.</p>";
 
-    } finally {
-
-      createGroupBtn.disabled = false;
-      createGroupBtn.textContent = "Create Group";
-
-    }
-
-  });
-
-}
-// ===============================
-// GROUP CHAT
-// ===============================
-
-const directChatTab = document.getElementById("directChatTab");
-const groupChatTab = document.getElementById("groupChatTab");
-
-const directChatSection = document.getElementById("directChatSection");
-const groupChatSection = document.getElementById("groupChatSection");
-
-const createGroupBtn = document.getElementById("createGroupBtn");
-
-// Direct Chat tab
-if (directChatTab) {
-  directChatTab.addEventListener("click", async () => {
-    directChatSection.style.display = "block";
-    groupChatSection.style.display = "none";
-
-    directChatTab.className = "primary-button";
-    groupChatTab.className = "secondary-button";
-
-    await loadUsers();
-  });
-}
-
-// Group Chat tab
-if (groupChatTab) {
-  groupChatTab.addEventListener("click", async () => {
-
-    // Only teachers can create groups
-    if (currentProfile.role !== "teacher") {
-      alert("Only teachers can create group chats.");
       return;
     }
 
-    directChatSection.style.display = "none";
-    groupChatSection.style.display = "block";
+    if (!data || data.length === 0) {
 
-    directChatTab.className = "secondary-button";
-    groupChatTab.className = "primary-button";
+      groupUserList.innerHTML =
+        "<p>No other users found.</p>";
 
-    await loadGroupUsers();
-  });
-}
+      return;
+    }
 
-// Load users for group selection
-async function loadGroupUsers() {
+    groupUserList.innerHTML = "";
 
-  const groupUserList = document.getElementById("groupUserList");
+    data.forEach((user) => {
 
-  if (!groupUserList) return;
+      const item =
+        document.createElement("label");
 
-  groupUserList.innerHTML = "<p>Loading users...</p>";
+      item.className =
+        "group-user-item";
 
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("id, full_name, role, lrn")
-    .neq("id", currentUser.id)
-    .order("full_name", { ascending: true });
+      item.innerHTML = `
+        <input
+          type="checkbox"
+          value="${user.id}"
+          class="group-user-checkbox"
+        >
 
-  if (error) {
+        <div class="group-user-info">
 
-    console.error(error);
+          <strong>
+            ${escapeHTML(user.full_name)}
+          </strong>
 
-    groupUserList.innerHTML =
-      "<p>Unable to load users.</p>";
+          <span>
+            ${
+              user.role === "teacher"
+                ? "Teacher"
+                : "Student"
+            }
+          </span>
 
-    return;
+        </div>
+      `;
+
+      groupUserList.appendChild(item);
+
+    });
+
   }
 
-  if (!data || data.length === 0) {
+  // =====================================
+  // CREATE GROUP
+  // =====================================
 
-    groupUserList.innerHTML =
-      "<p>No other users found.</p>";
+  if (createGroupBtn) {
 
-    return;
+    createGroupBtn.addEventListener(
+      "click",
+      async () => {
+
+        if (profile.role !== "teacher") {
+
+          alert(
+            "Only teachers can create group chats."
+          );
+
+          return;
+        }
+
+        const groupName =
+          document
+            .getElementById("groupName")
+            .value
+            .trim();
+
+        if (!groupName) {
+
+          alert(
+            "Please enter a group name."
+          );
+
+          return;
+        }
+
+        const selectedUsers =
+          Array.from(
+            document.querySelectorAll(
+              ".group-user-checkbox:checked"
+            )
+          ).map(
+            (checkbox) =>
+              checkbox.value
+          );
+
+        if (selectedUsers.length === 0) {
+
+          alert(
+            "Please select at least one member."
+          );
+
+          return;
+        }
+
+        createGroupBtn.disabled = true;
+
+        createGroupBtn.textContent =
+          "Creating...";
+
+        try {
+
+          // Create conversation
+          const {
+            data: conversation,
+            error: conversationError
+          } = await supabase
+            .from("conversations")
+            .insert({
+              name: groupName,
+              is_group: true,
+              created_by:
+                currentUser.id
+            })
+            .select()
+            .single();
+
+          if (conversationError) {
+            throw conversationError;
+          }
+
+          // Add teacher + selected users
+          const members = [
+            {
+              conversation_id:
+                conversation.id,
+
+              user_id:
+                currentUser.id
+            },
+
+            ...selectedUsers.map(
+              (userId) => ({
+                conversation_id:
+                  conversation.id,
+
+                user_id:
+                  userId
+              })
+            )
+          ];
+
+          const {
+            error: memberError
+          } = await supabase
+            .from("conversation_members")
+            .insert(members);
+
+          if (memberError) {
+            throw memberError;
+          }
+
+          // Reset form
+          document.getElementById(
+            "groupName"
+          ).value = "";
+
+          document
+            .querySelectorAll(
+              ".group-user-checkbox"
+            )
+            .forEach(
+              (checkbox) => {
+                checkbox.checked = false;
+              }
+            );
+
+          chatDialog.close();
+
+          await loadConversations();
+
+          await openConversation(
+            conversation.id
+          );
+
+        } catch (error) {
+
+          console.error(error);
+
+          alert(
+            "Could not create the group: " +
+            error.message
+          );
+
+        } finally {
+
+          createGroupBtn.disabled =
+            false;
+
+          createGroupBtn.textContent =
+            "Create Group";
+
+        }
+
+      }
+    );
+
   }
 
-  groupUserList.innerHTML = "";
+  // =====================================
+  // HTML SECURITY
+  // =====================================
 
-  data.forEach((user) => {
+  function escapeHTML(value) {
 
-    const item = document.createElement("label");
+    const element =
+      document.createElement("div");
 
-    item.className = "group-user-item";
+    element.textContent =
+      value || "";
 
-    item.innerHTML = `
-      <input
-        type="checkbox"
-        value="${user.id}"
-        class="group-user-checkbox"
-      >
+    return element.innerHTML;
 
-      <div class="group-user-info">
-        <strong>${escapeHTML(user.full_name)}</strong>
-        <span>
-          ${user.role === "teacher" ? "Teacher" : "Student"}
-        </span>
-      </div>
-    `;
+  }
 
-    groupUserList.appendChild(item);
-
-  });
-}
-
-// Create Group
-if (createGroupBtn) {
-
-  createGroupBtn.addEventListener("click", async () => {
-
-    if (currentProfile.role !== "teacher") {
-
-      alert("Only teachers can create group chats.");
-
-      return;
-    }
-
-    const groupName =
-      document.getElementById("groupName").value.trim();
-
-    if (!groupName) {
-
-      alert("Please enter a group name.");
-
-      return;
-    }
-
-    const selectedUsers =
-      Array.from(
-        document.querySelectorAll(".group-user-checkbox:checked")
-      ).map((checkbox) => checkbox.value);
-
-    if (selectedUsers.length === 0) {
-
-      alert("Please select at least one member.");
-
-      return;
-    }
-
-    createGroupBtn.disabled = true;
-    createGroupBtn.textContent = "Creating...";
-
-    try {
-
-      // Create the conversation
-      const { data: conversation, error: conversationError } =
-        await supabase
-          .from("conversations")
-          .insert({
-            name: groupName,
-            is_group: true,
-            created_by: currentUser.id
-          })
-          .select()
-          .single();
-
-      if (conversationError) {
-        throw conversationError;
-      }
-
-      // Add teacher and selected members
-      const members = [
-        {
-          conversation_id: conversation.id,
-          user_id: currentUser.id
-        },
-
-        ...selectedUsers.map((userId) => ({
-          conversation_id: conversation.id,
-          user_id: userId
-        }))
-      ];
-
-      const { error: memberError } =
-        await supabase
-          .from("conversation_members")
-          .insert(members);
-
-      if (memberError) {
-        throw memberError;
-      }
-
-      // Reset form
-      document.getElementById("groupName").value = "";
-
-      document
-        .querySelectorAll(".group-user-checkbox")
-        .forEach((checkbox) => {
-          checkbox.checked = false;
-        });
-
-      // Close dialog
-      chatDialog.close();
-
-      // Refresh conversations
-      await loadConversations();
-
-      // Open new group
-      await openConversation(conversation.id);
-
-    } catch (error) {
-
-      console.error(error);
-
-      alert(
-        "Could not create the group: " +
-        error.message
-      );
-
-    } finally {
-
-      createGroupBtn.disabled = false;
-      createGroupBtn.textContent = "Create Group";
-
-    }
-
-  });
+});
