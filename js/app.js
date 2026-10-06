@@ -615,41 +615,22 @@ function setupAnnouncementButton() {
 // ==========================================
 
 function setupNavigation() {
-
-  const buttons =
-    document.querySelectorAll(
-      "[data-section]"
-    );
+  const buttons = document.querySelectorAll("[data-section]");
 
   buttons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const sectionId = button.getAttribute("data-section");
 
-    button.addEventListener(
-      "click",
-      () => {
+      document.querySelectorAll(".portal-section").forEach((section) => {
+        section.style.display = "none";
+      });
 
-        const section =
-          button.dataset.section;
+      const selectedSection = document.getElementById(sectionId);
 
-        document
-          .querySelectorAll(
-            ".portal-section"
-          )
-          .forEach((element) => {
-            element.style.display =
-              "none";
-          });
-
-        const selected =
-          document.getElementById(
-            section
-          );
-
-        if (selected) {
-          selected.style.display =
-            "block";
-        }
+      if (selectedSection) {
+        selectedSection.style.display = "block";
       }
-    );
+    });
   });
 }
 
