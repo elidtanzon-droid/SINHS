@@ -1036,4 +1036,225 @@ if (createGroupBtn) {
   });
 
 }
+// ===============================
+// GROUP CHAT
+// ===============================
+
+const directChatTab = document.getElementById("directChatTab");
+const groupChatTab = document.getElementById("groupChatTab");
+
+const directChatSection = document.getElementById("directChatSection");
+const groupChatSection = document.getElementById("groupChatSection");
+
+const createGroupBtn = document.getElementById("createGroupBtn");
+
+// Direct Chat tab
+if (directChatTab) {
+  directChatTab.addEventListener("click", async () => {
+    directChatSection.style.display = "block";
+    groupChatSection.style.display = "none";
+
+    directChatTab.className = "primary-button";
+    groupChatTab.className = "secondary-button";
+
+    await loadUsers();
+  });
+}
+
+// Group Chat tab
+if (groupChatTab) {
+  groupChatTab.addEventListener("click", async () => {
+
+    // Only teachers can create groups
+    if (currentProfile.role !== "teacher") {
+      alert("Only teachers can create group chats.");
+      return;
+    }
+
+    directChatSection.style.display = "none";
+    groupChatSection.style.display = "block";
+
+    directChatTab.className = "secondary-button";
+    groupChatTab.className = "primary-button";
+
+    await loadGroupUsers();
+  });
+}
+
+// Load users for group selection
+async function loadGroupUsers() {
+
+  const groupUserList = document.getElementById("groupUserList");
+
+  if (!groupUserList) return;
+
+  groupUserList.innerHTML = "<p>Loading users...</p>";
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id, full_name, role, lrn")
+    .neq("id", currentUser.id)
+    .order("full_name", { ascending: true });
+
+  if (error) {
+
+    console.error(error);
+
+    groupUserList.innerHTML =
+      "<p>Unable to load users.</p>";
+
+    return;
+  }
+
+  if (!data || data.length === 0) {
+
+    groupUserList.innerHTML =
+      "<p>No other users found.</p>";
+
+    return;
+  }
+
+  groupUserList.innerHTML = "";
+
+  data.forEach((user) => {
+
+    const item = document.createElement("label");
+
+    item.className = "group-user-item";
+
+    item.innerHTML = `
+      <input
+        type="checkbox"
+        value="${user.id}"
+        class="group-user-checkbox"
+      >
+
+      <div class="group-user-info">
+        <strong>${escapeHTML(user.full_name)}</strong>
+        <span>
+          ${user.role === "teacher" ? "Teacher" : "Student"}
+        </span>
+      </div>
+    `;
+
+    groupUserList.appendChild(item);
+
+  });
+}
+
+// Create Group
+if (createGroupBtn) {
+
+  createGroupBtn.addEventListener("click", async () => {
+
+    if (currentProfile.role !== "teacher") {
+
+      alert("Only teachers can create group chats.");
+
+      return;
+    }
+
+    const groupName =
+      document.getElementById("groupName").value.trim();
+
+    if (!groupName) {
+
+      alert("Please enter a group name.");
+
+      return;
+    }
+
+    const selectedUsers =
+      Array.from(
+        document.querySelectorAll(".group-user-checkbox:checked")
+      ).map((checkbox) => checkbox.value);
+
+    if (selectedUsers.length === 0) {
+
+      alert("Please select at least one member.");
+
+      return;
+    }
+
+    createGroupBtn.disabled = true;
+    createGroupBtn.textContent = "Creating...";
+
+    try {
+
+      // Create the conversation
+      const { data: conversation, error: conversationError } =
+        await supabase
+          .from("conversations")
+          .insert({
+            name: groupName,
+            is_group: true,
+            created_by: currentUser.id
+          })
+          .select()
+          .single();
+
+      if (conversationError) {
+        throw conversationError;
+      }
+
+      // Add teacher and selected members
+      const members = [
+        {
+          conversation_id: conversation.id,
+          user_id: currentUser.id
+        },
+
+        ...selectedUsers.map((userId) => ({
+          conversation_id: conversation.id,
+          user_id: userId
+        }))
+      ];
+
+      const { error: memberError } =
+        await supabase
+          .from("conversation_members")
+          .insert(members);
+
+      if (memberError) {
+        throw memberError;
+      }
+
+      // Reset form
+      document.getElementById("groupName").value = "";
+
+      document
+        .querySelectorAll(".group-user-checkbox")
+        .forEach((checkbox) => {
+          checkbox.checked = false;
+        });
+
+      // Close dialog
+      chatDialog.close();
+
+      // Refresh conversations
+      await loadConversations();
+
+      // Open new group
+      await openConversation(conversation.id);
+
+    } catch (error) {
+
+      console.error(error);
+
+      alert(
+        "Could not create the group: " +
+        error.message
+      );
+
+    } finally {
+
+      createGroupBtn.disabled = false;
+      createGroupBtn.textContent = "Create Group";
+
+    }
+
+  });
+
+}
+
 });
