@@ -353,46 +353,36 @@
        NEW CHAT DIALOG
   ====================================== -->
 
-  <dialog id="chatDialog">
+ <dialog id="chatDialog">
 
-    <div class="dialog-content">
+  <div class="dialog-content">
 
-      <h2>
-        Start a New Chat
-      </h2>
+    <h2>Start a New Chat</h2>
 
-      <p>
-        Enter the user's Supabase ID
-        for now.
-      </p>
+    <p>Select a student or teacher.</p>
 
-      <input
-        type="text"
-        id="targetUserId"
-        placeholder="User ID"
+    <div
+      id="userList"
+      class="user-list"
+    >
+      <p>Loading users...</p>
+    </div>
+
+    <div class="dialog-buttons">
+
+      <button
+        type="button"
+        id="cancelChatBtn"
+        class="secondary-button"
       >
-
-      <div class="dialog-buttons">
-
-        <button
-          id="cancelChatBtn"
-          class="secondary-button"
-        >
-          Cancel
-        </button>
-
-        <button
-          id="createChatBtn"
-          class="primary-button"
-        >
-          Start Chat
-        </button>
-
-      </div>
+        Cancel
+      </button>
 
     </div>
 
-  </dialog>
+  </div>
+
+</dialog>
 
 
   <!-- =====================================
