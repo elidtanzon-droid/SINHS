@@ -432,4 +432,34 @@ dialog::backdrop {
     border-bottom: 1px solid #ddd;
     max-height: 180px;
   }
+  .user-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 350px;
+  overflow-y: auto;
+  margin: 20px 0;
+}
+
+.user-select-button {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: white;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.user-select-button:hover {
+  background: #f2f4f7;
+}
+
+.user-select-button span {
+  font-size: 13px;
+  color: #777;
+}
 }
