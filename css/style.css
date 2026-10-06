@@ -364,47 +364,123 @@ body {
   color: #888;
 }
 
-/* DIALOG */
+/* ===============================
+   CHAT DIALOG
+   =============================== */
 
 dialog {
+  width: min(500px, 90%);
+  max-height: 80vh;
+  padding: 0;
   border: none;
   border-radius: 12px;
-  padding: 0;
-  width: 400px;
-  max-width: 90%;
-  margin: auto;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+  background: white;
+  color: #222;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
 }
 
 dialog::backdrop {
-  background: rgba(0,0,0,0.45);
+  background: rgba(0, 0, 0, 0.55);
 }
 
 .dialog-content {
   padding: 25px;
+  max-height: 80vh;
+  overflow-y: auto;
 }
 
 .dialog-content h2 {
+  margin-top: 0;
   margin-bottom: 10px;
 }
 
 .dialog-content p {
-  color: #666;
-  margin-bottom: 15px;
+  color: #555;
 }
 
-.dialog-content input {
+.chat-type-buttons {
+  display: flex;
+  gap: 10px;
+  margin: 15px 0;
+}
+
+.chat-type-buttons button {
+  flex: 1;
+}
+
+#groupName {
   width: 100%;
   padding: 12px;
+  margin: 8px 0 15px;
   border: 1px solid #ccc;
-  border-radius: 7px;
-  margin-bottom: 20px;
+  border-radius: 8px;
+  box-sizing: border-box;
+  font-size: 15px;
+}
+
+.user-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 350px;
+  overflow-y: auto;
+  margin: 20px 0;
+}
+
+.user-select-button {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: white;
+  color: #222;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.user-select-button:hover {
+  background: #f2f4f7;
+}
+
+.user-select-button span {
+  font-size: 13px;
+  color: #777;
+}
+
+.group-user-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+}
+
+.group-user-item input {
+  width: 18px;
+  height: 18px;
+}
+
+.group-user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.group-user-info span {
+  font-size: 13px;
+  color: #777;
 }
 
 .dialog-buttons {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+  margin-top: 20px;
 }
 
 /* MOBILE */
