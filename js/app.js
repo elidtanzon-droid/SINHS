@@ -127,81 +127,34 @@ document.addEventListener("DOMContentLoaded", async () => {
   // =====================================
 
   async function loadAnnouncements() {
+  const { data, error } = await supabaseClient
+    .from("announcements")
+    .select("*")
+    .order("created_at", { ascending: false });
 
-    const container =
-      document.getElementById(
-        "announcementsList"
-      );
-
-    if (!container) return;
-
-    const { data, error } =
-      await supabase
-        .from("announcements")
-        .select(`
-          *,
-          profiles:created_by (
-            full_name
-          )
-        `)
-        .order(
-          "created_at",
-          { ascending: false }
-        );
-
-    if (error) {
-
-      console.error(error);
-
-      container.innerHTML =
-        "<p>Unable to load announcements.</p>";
-
-      return;
-    }
-
-    if (!data || data.length === 0) {
-
-      container.innerHTML =
-        "<p>No announcements yet.</p>";
-
-      return;
-    }
-
-    container.innerHTML = "";
-
-    data.forEach((announcement) => {
-
-      const item =
-        document.createElement("div");
-
-      item.className =
-        "announcement-item";
-
-      item.innerHTML = `
-        <h3>
-          ${escapeHTML(announcement.title)}
-        </h3>
-
-        <p>
-          ${escapeHTML(announcement.content)}
-        </p>
-
-        <small>
-          Posted by
-          ${escapeHTML(
-            announcement.profiles?.full_name ||
-            "Teacher"
-          )}
-        </small>
-      `;
-
-      container.appendChild(item);
-
-    });
-
+  if (error) {
+    console.error("Announcements error:", error);
+    announcementsList.innerHTML =
+      `<p>Unable to load announcements.</p>`;
+    return;
   }
 
-  await loadAnnouncements();
+  if (!data || data.length === 0) {
+    announcementsList.innerHTML =
+      `<p>No announcements yet.</p>`;
+    return;
+  }
+
+  announcementsList.innerHTML = data.map((announcement) => `
+    <div class="announcement-card">
+      <h3>${escapeHtml(announcement.title)}</h3>
+      <p>${escapeHtml(announcement.content)}</p>
+      <small>
+        ${new Date(announcement.created_at).toLocaleString()}
+      </small>
+    </div>
+  `).join("");
+}
 
   // =====================================
   // LOAD CONVERSATIONS
