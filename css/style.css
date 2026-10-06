@@ -1,0 +1,225 @@
+* {
+  box-sizing: border-box;
+}
+
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f6f8;
+  color: #1f2937;
+}
+
+
+/* LOGIN */
+
+.login-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+}
+
+
+.login-card {
+  width: min(420px, 92%);
+  background: white;
+  padding: 32px;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px #0001;
+}
+
+
+.login-card h1 {
+  text-align: center;
+  margin-bottom: 6px;
+}
+
+
+.login-card > p {
+  text-align: center;
+  color: #667085;
+}
+
+
+.login-card form {
+  display: grid;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+
+input,
+textarea,
+button {
+  font: inherit;
+}
+
+
+input,
+textarea {
+  width: 100%;
+  padding: 11px;
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+}
+
+
+textarea {
+  min-height: 120px;
+}
+
+
+button {
+  border: 0;
+  border-radius: 8px;
+  padding: 10px 14px;
+  background: #14532d;
+  color: white;
+  cursor: pointer;
+}
+
+
+button:hover {
+  opacity: .9;
+}
+
+
+.status {
+  min-height: 20px;
+  color: #b42318;
+}
+
+
+/* MAIN APP */
+
+.app {
+  min-height: 100vh;
+  display: flex;
+}
+
+
+.sidebar {
+  width: 230px;
+  background: #123524;
+  color: white;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+}
+
+
+.sidebar h2 {
+  margin-top: 0;
+}
+
+
+.sidebar nav {
+  display: grid;
+  gap: 8px;
+}
+
+
+.sidebar nav button {
+  background: transparent;
+  text-align: left;
+}
+
+
+.logout {
+  margin-top: auto;
+  background: #8b1e1e;
+}
+
+
+.main {
+  flex: 1;
+  padding: 24px;
+}
+
+
+.topbar {
+  background: white;
+  border-radius: 12px;
+  padding: 18px 22px;
+  margin-bottom: 20px;
+}
+
+
+.topbar h1 {
+  margin: 0 0 4px;
+}
+
+
+.topbar p {
+  margin: 0;
+  color: #667085;
+}
+
+
+/* SECTIONS */
+
+.section {
+  display: none;
+}
+
+
+.section.active {
+  display: block;
+}
+
+
+.hero {
+  background: white;
+  padding: 32px;
+  border-radius: 14px;
+}
+
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+
+/* ANNOUNCEMENTS */
+
+.announcement {
+  background: white;
+  padding: 18px;
+  margin-bottom: 12px;
+  border-radius: 12px;
+}
+
+
+.announcement h3 {
+  margin-top: 0;
+}
+
+
+/* MOBILE */
+
+@media (max-width: 750px) {
+
+  .sidebar {
+    width: 80px;
+    padding: 12px;
+  }
+
+
+  .sidebar h2 {
+    font-size: 14px;
+  }
+
+
+  .sidebar nav button {
+    font-size: 0;
+  }
+
+
+  .main {
+    padding: 12px;
+  }
+
+}
