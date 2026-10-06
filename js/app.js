@@ -37,11 +37,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
-  const userName =
-    document.getElementById("userName");
-
-  const userRole =
-    document.getElementById("userRole");
+  const userName = document.getElementById("userName");
+  const userRole = document.getElementById("userRole");
 
   if (userName) {
     userName.textContent = profile.full_name;
@@ -114,8 +111,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         await supabase.auth.signOut();
 
-        window.location.href =
-          "index.html";
+        window.location.href = "index.html";
 
       }
     );
@@ -127,103 +123,201 @@ document.addEventListener("DOMContentLoaded", async () => {
   // =====================================
 
   async function loadAnnouncements() {
-  const { data, error } = await supabaseClient
-    .from("announcements")
-    .select("*")
-    .order("created_at", { ascending: false });
 
-  if (error) {
-    console.error("Announcements error:", error);
+    const announcementsList =
+      document.getElementById("announcementsList");
+
+    if (!announcementsList) return;
+
+    const { data, error } =
+      await supabase
+        .from("announcements")
+        .select("*")
+        .order(
+          "created_at",
+          { ascending: false }
+        );
+
+    if (error) {
+
+      console.error(
+        "Announcements error:",
+        error
+      );
+
+      announcementsList.innerHTML =
+        `<p>Unable to load announcements.</p>`;
+
+      return;
+    }
+
+    if (!data || data.length === 0) {
+
+      announcementsList.innerHTML =
+        `<p>No announcements yet.</p>`;
+
+      return;
+    }
+
     announcementsList.innerHTML =
-      `<p>Unable to load announcements.</p>`;
-    return;
-  }
+      data.map((announcement) => `
 
-  if (!data || data.length === 0) {
-    announcementsList.innerHTML =
-      `<p>No announcements yet.</p>`;
-    return;
-  }
+        <div class="announcement-card">
 
-  announcementsList.innerHTML = data.map((announcement) => `
-    <div class="announcement-card">
-      <h3>${escapeHtml(announcement.title)}</h3>
-      <p>${escapeHtml(announcement.content)}</p>
-      <small>
-        ${new Date(announcement.created_at).toLocaleString()}
-      </small>
-    </div>
-  `).join("");
-}
+          <h3>
+            ${escapeHTML(announcement.title)}
+          </h3>
+
+          <p>
+            ${escapeHTML(announcement.content)}
+          </p>
+
+          <small>
+            ${new Date(
+              announcement.created_at
+            ).toLocaleString()}
+          </small>
+
+        </div>
+
+      `).join("");
+
+  }
 
   // =====================================
   // LOAD CONVERSATIONS
   // =====================================
 
- async function loadConversations() {
-  const { data: memberships, error: memberError } =
-    await supabaseClient
+  async function loadConversations() {
+
+    const conversationList =
+      document.getElementById(
+        "conversationList"
+      );
+
+    if (!conversationList) return;
+
+    const {
+      data: memberships,
+      error: memberError
+    } = await supabase
       .from("conversation_members")
       .select("conversation_id")
-      .eq("user_id", currentUser.id);
+      .eq(
+        "user_id",
+        currentUser.id
+      );
 
-  if (memberError) {
-    console.error("Conversation members error:", memberError);
-    conversationList.innerHTML =
-      `<p>Unable to load conversations.</p>`;
-    return;
-  }
+    if (memberError) {
 
-  if (!memberships || memberships.length === 0) {
-    conversationList.innerHTML =
-      `<p>No conversations yet.</p>`;
-    return;
-  }
+      console.error(
+        "Conversation members error:",
+        memberError
+      );
 
-  const conversationIds =
-    memberships.map(item => item.conversation_id);
+      conversationList.innerHTML =
+        `<p>Unable to load conversations.</p>`;
 
-  const { data: conversations, error: conversationError } =
-    await supabaseClient
+      return;
+    }
+
+    if (!memberships ||
+        memberships.length === 0) {
+
+      conversationList.innerHTML =
+        `<p>No conversations yet.</p>`;
+
+      return;
+    }
+
+    const conversationIds =
+      memberships.map(
+        item => item.conversation_id
+      );
+
+    const {
+      data: conversations,
+      error: conversationError
+    } = await supabase
       .from("conversations")
-      .select("id, name, is_group, created_at")
-      .in("id", conversationIds)
-      .order("created_at", { ascending: false });
+      .select(
+        "id, name, is_group, created_at"
+      )
+      .in(
+        "id",
+        conversationIds
+      )
+      .order(
+        "created_at",
+        { ascending: false }
+      );
 
-  if (conversationError) {
-    console.error("Conversations error:", conversationError);
+    if (conversationError) {
+
+      console.error(
+        "Conversations error:",
+        conversationError
+      );
+
+      conversationList.innerHTML =
+        `<p>Unable to load conversations.</p>`;
+
+      return;
+    }
+
+    if (!conversations ||
+        conversations.length === 0) {
+
+      conversationList.innerHTML =
+        `<p>No conversations yet.</p>`;
+
+      return;
+    }
+
     conversationList.innerHTML =
-      `<p>Unable to load conversations.</p>`;
-    return;
-  }
+      conversations.map(
+        conversation => `
 
-  if (!conversations || conversations.length === 0) {
-    conversationList.innerHTML =
-      `<p>No conversations yet.</p>`;
-    return;
-  }
+          <button
+            type="button"
+            class="conversation-item"
+            data-id="${conversation.id}"
+          >
 
-  conversationList.innerHTML = conversations.map(conversation => `
-    <button
-      type="button"
-      class="conversation-item"
-      data-id="${conversation.id}"
-    >
-      ${escapeHtml(
-        conversation.name ||
-        (conversation.is_group ? "Group Chat" : "Direct Chat")
-      )}
-    </button>
-  `).join("");
+            ${escapeHTML(
+              conversation.name ||
+              (
+                conversation.is_group
+                  ? "Group Chat"
+                  : "Direct Chat"
+              )
+            )}
 
-  document
-    .querySelectorAll(".conversation-item")
-    .forEach(button => {
-      button.addEventListener("click", () => {
-        openConversation(button.dataset.id);
+          </button>
+
+        `
+      ).join("");
+
+    document
+      .querySelectorAll(
+        ".conversation-item"
+      )
+      .forEach(button => {
+
+        button.addEventListener(
+          "click",
+          () => {
+
+            openConversation(
+              button.dataset.id
+            );
+
+          }
+        );
+
       });
-    });
-}
+
+  }
 
   // =====================================
   // OPEN CONVERSATION
@@ -257,31 +351,36 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (!container) return;
 
-    const { data, error } =
-      await supabase
-        .from("messages")
-        .select(`
-          id,
-          content,
-          image_url,
-          sender_id,
-          created_at,
-          profiles:sender_id (
-            full_name
-          )
-        `)
-        .eq(
-          "conversation_id",
-          conversationId
+    const {
+      data,
+      error
+    } = await supabase
+      .from("messages")
+      .select(`
+        id,
+        content,
+        image_url,
+        sender_id,
+        created_at,
+        profiles:sender_id (
+          full_name
         )
-        .order(
-          "created_at",
-          { ascending: true }
-        );
+      `)
+      .eq(
+        "conversation_id",
+        conversationId
+      )
+      .order(
+        "created_at",
+        { ascending: true }
+      );
 
     if (error) {
 
-      console.error(error);
+      console.error(
+        "Messages error:",
+        error
+      );
 
       container.innerHTML =
         "<p>Unable to load messages.</p>";
@@ -294,9 +393,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!data || data.length === 0) {
 
       container.innerHTML =
-        "<div class='empty-chat'>" +
-        "<p>No messages yet.</p>" +
-        "</div>";
+        `
+        <div class="empty-chat">
+          <p>No messages yet.</p>
+        </div>
+        `;
 
       return;
     }
@@ -311,21 +412,23 @@ document.addEventListener("DOMContentLoaded", async () => {
           ? "message own-message"
           : "message";
 
-      let image = "";
+      let imageHTML = "";
 
       if (message.image_url) {
 
-        image = `
+        imageHTML = `
           <img
             src="${escapeHTML(message.image_url)}"
             class="message-image"
             alt="Sent image"
+            onclick="window.open('${escapeHTML(message.image_url)}', '_blank')"
           >
         `;
 
       }
 
       messageElement.innerHTML = `
+
         <strong>
           ${escapeHTML(
             message.profiles?.full_name ||
@@ -335,19 +438,24 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         ${
           message.content
-            ? `<p>${escapeHTML(
-                message.content
-              )}</p>`
+            ? `
+              <p>
+                ${escapeHTML(
+                  message.content
+                )}
+              </p>
+            `
             : ""
         }
 
-        ${image}
+        ${imageHTML}
 
         <small>
           ${new Date(
             message.created_at
           ).toLocaleString()}
         </small>
+
       `;
 
       container.appendChild(
@@ -362,7 +470,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // =====================================
-  // SEND MESSAGE
+  // SEND MESSAGE + IMAGE
   // =====================================
 
   const messageForm =
@@ -395,13 +503,119 @@ document.addEventListener("DOMContentLoaded", async () => {
             "messageInput"
           );
 
+        const imageInput =
+          document.getElementById(
+            "messageImage"
+          );
+
         const content =
           input.value.trim();
 
-        if (!content) return;
+        const imageFile =
+          imageInput.files[0];
 
-        const { error } =
-          await supabase
+        if (!content && !imageFile) {
+
+          alert(
+            "Please enter a message or select an image."
+          );
+
+          return;
+        }
+
+        const sendButton =
+          messageForm.querySelector(
+            "button[type='submit']"
+          );
+
+        if (sendButton) {
+          sendButton.disabled = true;
+          sendButton.textContent = "Sending...";
+        }
+
+        try {
+
+          // =================================
+          // UPLOAD IMAGE
+          // =================================
+
+          let imageURL = null;
+
+          if (imageFile) {
+
+            // Limit image size to 5 MB
+            if (
+              imageFile.size >
+              5 * 1024 * 1024
+            ) {
+
+              throw new Error(
+                "Image must be smaller than 5 MB."
+              );
+
+            }
+
+            // Check image type
+            if (
+              !imageFile.type.startsWith(
+                "image/"
+              )
+            ) {
+
+              throw new Error(
+                "Please select an image file."
+              );
+
+            }
+
+            const fileExtension =
+              imageFile.name
+                .split(".")
+                .pop()
+                .toLowerCase();
+
+            const fileName =
+              `${currentUser.id}/${Date.now()}-${crypto.randomUUID()}.${fileExtension}`;
+
+            const {
+              error: uploadError
+            } = await supabase
+              .storage
+              .from("message-images")
+              .upload(
+                fileName,
+                imageFile,
+                {
+                  cacheControl: "3600",
+                  upsert: false
+                }
+              );
+
+            if (uploadError) {
+              throw uploadError;
+            }
+
+            const {
+              data: publicURLData
+            } = supabase
+              .storage
+              .from("message-images")
+              .getPublicUrl(
+                fileName
+              );
+
+            imageURL =
+              publicURLData.publicUrl;
+
+          }
+
+          // =================================
+          // SAVE MESSAGE
+          // =================================
+
+          const {
+            error: messageError
+          } = await supabase
             .from("messages")
             .insert({
               conversation_id:
@@ -411,21 +625,50 @@ document.addEventListener("DOMContentLoaded", async () => {
                 currentUser.id,
 
               content:
-                content
+                content || null,
+
+              image_url:
+                imageURL
             });
 
-        if (error) {
+          if (messageError) {
+            throw messageError;
+          }
 
-          alert(error.message);
+          // Clear form
+          input.value = "";
+          imageInput.value = "";
 
-          return;
+          // Reload messages
+          await loadMessages(
+            conversationId
+          );
+
+        } catch (error) {
+
+          console.error(
+            "Send message error:",
+            error
+          );
+
+          alert(
+            "Could not send message: " +
+            error.message
+          );
+
+        } finally {
+
+          if (sendButton) {
+
+            sendButton.disabled =
+              false;
+
+            sendButton.textContent =
+              "Send";
+
+          }
+
         }
-
-        input.value = "";
-
-        await loadMessages(
-          conversationId
-        );
 
       }
     );
@@ -446,24 +689,29 @@ document.addEventListener("DOMContentLoaded", async () => {
       async () => {
 
         const title =
-          prompt("Announcement title:");
+          prompt(
+            "Announcement title:"
+          );
 
         if (!title) return;
 
         const content =
-          prompt("Announcement message:");
+          prompt(
+            "Announcement message:"
+          );
 
         if (!content) return;
 
-        const { error } =
-          await supabase
-            .from("announcements")
-            .insert({
-              title: title,
-              content: content,
-              created_by:
-                currentUser.id
-            });
+        const {
+          error
+        } = await supabase
+          .from("announcements")
+          .insert({
+            title: title,
+            content: content,
+            created_by:
+              currentUser.id
+          });
 
         if (error) {
 
@@ -498,7 +746,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       "cancelChatBtn"
     );
 
-  if (newChatButton && chatDialog) {
+  if (
+    newChatButton &&
+    chatDialog
+  ) {
 
     newChatButton.addEventListener(
       "click",
@@ -513,12 +764,17 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   }
 
-  if (cancelChatButton && chatDialog) {
+  if (
+    cancelChatButton &&
+    chatDialog
+  ) {
 
     cancelChatButton.addEventListener(
       "click",
       () => {
+
         chatDialog.close();
+
       }
     );
 
@@ -540,20 +796,22 @@ document.addEventListener("DOMContentLoaded", async () => {
     userList.innerHTML =
       "<p>Loading users...</p>";
 
-    const { data, error } =
-      await supabase
-        .from("profiles")
-        .select(
-          "id, full_name, role, lrn"
-        )
-        .neq(
-          "id",
-          currentUser.id
-        )
-        .order(
-          "full_name",
-          { ascending: true }
-        );
+    const {
+      data,
+      error
+    } = await supabase
+      .from("profiles")
+      .select(
+        "id, full_name, role, lrn"
+      )
+      .neq(
+        "id",
+        currentUser.id
+      )
+      .order(
+        "full_name",
+        { ascending: true }
+      );
 
     if (error) {
 
@@ -565,7 +823,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    if (!data || data.length === 0) {
+    if (!data ||
+        data.length === 0) {
 
       userList.innerHTML =
         "<p>No other users found.</p>";
@@ -578,7 +837,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     data.forEach((user) => {
 
       const button =
-        document.createElement("button");
+        document.createElement(
+          "button"
+        );
 
       button.type = "button";
 
@@ -586,8 +847,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         "user-select-button";
 
       button.innerHTML = `
+
         <strong>
-          ${escapeHTML(user.full_name)}
+          ${escapeHTML(
+            user.full_name
+          )}
         </strong>
 
         <span>
@@ -597,6 +861,7 @@ document.addEventListener("DOMContentLoaded", async () => {
               : "Student"
           }
         </span>
+
       `;
 
       button.addEventListener(
@@ -612,7 +877,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
       );
 
-      userList.appendChild(button);
+      userList.appendChild(
+        button
+      );
 
     });
 
@@ -626,50 +893,60 @@ document.addEventListener("DOMContentLoaded", async () => {
     targetUserId
   ) {
 
-    const { data: myMemberships } =
-      await supabase
-        .from("conversation_members")
-        .select("conversation_id")
-        .eq(
-          "user_id",
-          currentUser.id
-        );
+    const {
+      data: myMemberships
+    } = await supabase
+      .from("conversation_members")
+      .select(
+        "conversation_id"
+      )
+      .eq(
+        "user_id",
+        currentUser.id
+      );
 
     if (myMemberships) {
 
-      for (const membership of myMemberships) {
+      for (
+        const membership
+        of myMemberships
+      ) {
 
-        const { data: conversation } =
-          await supabase
-            .from("conversations")
-            .select(
-              "id, is_group"
-            )
-            .eq(
-              "id",
-              membership.conversation_id
-            )
-            .eq(
-              "is_group",
-              false
-            )
-            .maybeSingle();
+        const {
+          data: conversation
+        } = await supabase
+          .from("conversations")
+          .select(
+            "id, is_group"
+          )
+          .eq(
+            "id",
+            membership.conversation_id
+          )
+          .eq(
+            "is_group",
+            false
+          )
+          .maybeSingle();
 
         if (!conversation) continue;
 
-        const { data: targetMembership } =
-          await supabase
-            .from("conversation_members")
-            .select("conversation_id")
-            .eq(
-              "conversation_id",
-              membership.conversation_id
-            )
-            .eq(
-              "user_id",
-              targetUserId
-            )
-            .maybeSingle();
+        const {
+          data: targetMembership
+        } = await supabase
+          .from("conversation_members")
+          .select(
+            "conversation_id"
+          )
+          .eq(
+            "conversation_id",
+            membership.conversation_id
+          )
+          .eq(
+            "user_id",
+            targetUserId
+          )
+          .maybeSingle();
 
         if (targetMembership) {
 
@@ -810,7 +1087,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       "click",
       async () => {
 
-        if (profile.role !== "teacher") {
+        if (
+          profile.role !==
+          "teacher"
+        ) {
 
           alert(
             "Only teachers can create group chats."
@@ -854,20 +1134,22 @@ document.addEventListener("DOMContentLoaded", async () => {
     groupUserList.innerHTML =
       "<p>Loading users...</p>";
 
-    const { data, error } =
-      await supabase
-        .from("profiles")
-        .select(
-          "id, full_name, role, lrn"
-        )
-        .neq(
-          "id",
-          currentUser.id
-        )
-        .order(
-          "full_name",
-          { ascending: true }
-        );
+    const {
+      data,
+      error
+    } = await supabase
+      .from("profiles")
+      .select(
+        "id, full_name, role, lrn"
+      )
+      .neq(
+        "id",
+        currentUser.id
+      )
+      .order(
+        "full_name",
+        { ascending: true }
+      );
 
     if (error) {
 
@@ -879,7 +1161,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    if (!data || data.length === 0) {
+    if (!data ||
+        data.length === 0) {
 
       groupUserList.innerHTML =
         "<p>No other users found.</p>";
@@ -892,12 +1175,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     data.forEach((user) => {
 
       const item =
-        document.createElement("label");
+        document.createElement(
+          "label"
+        );
 
       item.className =
         "group-user-item";
 
       item.innerHTML = `
+
         <input
           type="checkbox"
           value="${user.id}"
@@ -907,7 +1193,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         <div class="group-user-info">
 
           <strong>
-            ${escapeHTML(user.full_name)}
+            ${escapeHTML(
+              user.full_name
+            )}
           </strong>
 
           <span>
@@ -919,9 +1207,12 @@ document.addEventListener("DOMContentLoaded", async () => {
           </span>
 
         </div>
+
       `;
 
-      groupUserList.appendChild(item);
+      groupUserList.appendChild(
+        item
+      );
 
     });
 
@@ -937,7 +1228,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       "click",
       async () => {
 
-        if (profile.role !== "teacher") {
+        if (
+          profile.role !==
+          "teacher"
+        ) {
 
           alert(
             "Only teachers can create group chats."
@@ -948,7 +1242,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         const groupName =
           document
-            .getElementById("groupName")
+            .getElementById(
+              "groupName"
+            )
             .value
             .trim();
 
@@ -967,11 +1263,13 @@ document.addEventListener("DOMContentLoaded", async () => {
               ".group-user-checkbox:checked"
             )
           ).map(
-            (checkbox) =>
+            checkbox =>
               checkbox.value
           );
 
-        if (selectedUsers.length === 0) {
+        if (
+          selectedUsers.length === 0
+        ) {
 
           alert(
             "Please select at least one member."
@@ -980,7 +1278,8 @@ document.addEventListener("DOMContentLoaded", async () => {
           return;
         }
 
-        createGroupBtn.disabled = true;
+        createGroupBtn.disabled =
+          true;
 
         createGroupBtn.textContent =
           "Creating...";
@@ -994,8 +1293,12 @@ document.addEventListener("DOMContentLoaded", async () => {
           } = await supabase
             .from("conversations")
             .insert({
-              name: groupName,
-              is_group: true,
+              name:
+                groupName,
+
+              is_group:
+                true,
+
               created_by:
                 currentUser.id
             })
@@ -1008,6 +1311,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
           // Add teacher + selected users
           const members = [
+
             {
               conversation_id:
                 conversation.id,
@@ -1017,21 +1321,28 @@ document.addEventListener("DOMContentLoaded", async () => {
             },
 
             ...selectedUsers.map(
-              (userId) => ({
+              userId => ({
+
                 conversation_id:
                   conversation.id,
 
                 user_id:
                   userId
+
               })
             )
+
           ];
 
           const {
             error: memberError
           } = await supabase
-            .from("conversation_members")
-            .insert(members);
+            .from(
+              "conversation_members"
+            )
+            .insert(
+              members
+            );
 
           if (memberError) {
             throw memberError;
@@ -1047,8 +1358,9 @@ document.addEventListener("DOMContentLoaded", async () => {
               ".group-user-checkbox"
             )
             .forEach(
-              (checkbox) => {
-                checkbox.checked = false;
+              checkbox => {
+                checkbox.checked =
+                  false;
               }
             );
 
@@ -1091,7 +1403,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   function escapeHTML(value) {
 
     const element =
-      document.createElement("div");
+      document.createElement(
+        "div"
+      );
 
     element.textContent =
       value || "";
@@ -1099,5 +1413,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     return element.innerHTML;
 
   }
+
+  // =====================================
+  // INITIAL LOAD
+  // =====================================
+
+  await loadAnnouncements();
+  await loadConversations();
 
 });
