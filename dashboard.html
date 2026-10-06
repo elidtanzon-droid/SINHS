@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
 
@@ -15,10 +16,6 @@
     href="css/style.css"
   >
 
-  <!-- Supabase -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <!-- Configuration -->
 </head>
 
 <body>
@@ -88,10 +85,13 @@
     <header class="top-header">
 
       <div>
+
         <h1>SINHS Portal</h1>
+
         <p>
           San Isidro National High School
         </p>
+
       </div>
 
       <div class="user-information">
@@ -191,11 +191,13 @@
       <div class="section-header">
 
         <div>
+
           <h2>Messages</h2>
 
           <p>
             Chat with students and teachers.
           </p>
+
         </div>
 
         <button
@@ -353,76 +355,145 @@
   ====================================== -->
 
   <dialog id="chatDialog">
-  <dialog id="chatDialog">
-  <div class="dialog-content">
-    <h2>Start a New Chat</h2>
 
-    <div class="chat-type-buttons">
-      <button type="button" id="directChatTab" class="primary-button">
-        Direct Chat
-      </button>
+    <div class="dialog-content">
 
-      <button type="button" id="groupChatTab" class="secondary-button">
-        Create Group
-      </button>
-    </div>
+      <h2>
+        Start a New Chat
+      </h2>
 
-    <!-- Direct Chat -->
-    <div id="directChatSection">
-      <p>Select a student or teacher.</p>
 
-      <div id="userList" class="user-list">
-        <p>Loading users...</p>
-      </div>
-    </div>
+      <!-- CHAT TYPE -->
 
-    <!-- Group Chat -->
-    <div id="groupChatSection" style="display: none;">
-      <label for="groupName">Group Name</label>
+      <div class="chat-type-buttons">
 
-      <input
-        type="text"
-        id="groupName"
-        placeholder="Enter group name"
-        maxlength="100"
-      />
+        <button
+          type="button"
+          id="directChatTab"
+          class="primary-button"
+        >
+          Direct Chat
+        </button>
 
-      <p>Select members:</p>
+        <button
+          type="button"
+          id="groupChatTab"
+          class="secondary-button"
+        >
+          Create Group
+        </button>
 
-      <div id="groupUserList" class="user-list">
-        <p>Loading users...</p>
       </div>
 
-      <button
-        type="button"
-        id="createGroupBtn"
-        class="primary-button"
+
+      <!-- =================================
+           DIRECT CHAT
+      ================================== -->
+
+      <div id="directChatSection">
+
+        <p>
+          Select a student or teacher.
+        </p>
+
+        <div
+          id="userList"
+          class="user-list"
+        >
+
+          <p>
+            Loading users...
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <!-- =================================
+           GROUP CHAT
+      ================================== -->
+
+      <div
+        id="groupChatSection"
+        style="display: none;"
       >
-        Create Group
-      </button>
+
+        <label for="groupName">
+          Group Name
+        </label>
+
+        <input
+          type="text"
+          id="groupName"
+          placeholder="Enter group name"
+          maxlength="100"
+        >
+
+
+        <p>
+          Select members:
+        </p>
+
+
+        <div
+          id="groupUserList"
+          class="user-list"
+        >
+
+          <p>
+            Loading users...
+          </p>
+
+        </div>
+
+
+        <button
+          type="button"
+          id="createGroupBtn"
+          class="primary-button"
+        >
+          Create Group
+        </button>
+
+      </div>
+
+
+      <!-- =================================
+           DIALOG BUTTONS
+      ================================== -->
+
+      <div class="dialog-buttons">
+
+        <button
+          type="button"
+          id="cancelChatBtn"
+          class="secondary-button"
+        >
+          Cancel
+        </button>
+
+      </div>
+
     </div>
 
-    <div class="dialog-buttons">
-      <button
-        type="button"
-        id="cancelChatBtn"
-        class="secondary-button"
-      >
-        Cancel
-      </button>
-    </div>
-  </div>
-</dialog>
-</dialog>
+  </dialog>
 
 
   <!-- =====================================
-       APP JAVASCRIPT
+       JAVASCRIPT
   ====================================== -->
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/config.js"></script>
-<script src="js/app.js"></script>
-  
+  <!-- Supabase: ONLY ONCE -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Configuration -->
+  <script src="js/config.js"></script>
+
+  <!-- Main Application -->
+  <script src="js/app.js"></script>
+
+
 </body>
+
 </html>
