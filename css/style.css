@@ -462,3 +462,46 @@ dialog::backdrop {
   font-size: 13px;
   color: #777;
 }
+.chat-type-buttons {
+  display: flex;
+  gap: 10px;
+  margin: 15px 0;
+}
+
+.chat-type-buttons button {
+  flex: 1;
+}
+
+#groupName {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0 15px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+.group-user-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: white;
+}
+
+.group-user-item input {
+  width: 18px;
+  height: 18px;
+}
+
+.group-user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.group-user-info span {
+  font-size: 13px;
+  color: #777;
+}
